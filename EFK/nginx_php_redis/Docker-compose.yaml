@@ -1,0 +1,106 @@
+version: "3.8"
+
+services:
+  nginx:
+    image: nginx
+    container_name: nginx
+    networks:
+      efk_network:
+    ports:
+      - 8080:80
+    volumes:
+      - ../docker-volume/nginx/:/etc/nginx/conf.d/
+    environment:
+      - TZ=Asia/Taipei
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: 172.20.0.5:24224
+        tag: nginx
+
+  php:
+    build: ../php
+    container_name: php
+    networks:
+      efk_network:
+    expose:
+      - 9000
+    volumes:
+      - ../docker-volume/php/:/var/www/html
+    environment:
+      - TZ=Asia/Taipei
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: 172.20.0.5:24224
+        tag: php
+
+  redis1:
+    image: redis
+    container_name: redis1
+    command: redis-server /usr/local/etc/redis/redis.conf --appendonly yes
+    volumes:
+      - ../docker-volume/redis/redis1/:/data
+      - ../docker-volume/redis/:/usr/local/etc/redis/
+    environment:
+      - TZ=Asia/Taipei
+    networks:
+      efk_network:
+        ipv4_address: 172.20.0.11
+    ports:
+      - 6379:6379
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: 172.20.0.5:24224
+        tag: redis1
+
+  redis2:
+    image: redis
+    container_name: redis2
+    command: redis-server /usr/local/etc/redis/redis.conf --slaveof redis1 6379 --appendonly yes
+    volumes:
+      - ../docker-volume/redis/redis2/:/data
+      - ../docker-volume/redis/:/usr/local/etc/redis/
+    environment:
+      - TZ=Asia/Taipei
+    networks:
+      efk_network:
+        ipv4_address: 172.20.0.12
+    ports:
+      - 6380:6379
+    depends_on:
+      - redis1
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: 172.20.0.5:24224
+        tag: redis2
+
+  redis3:
+    image: redis
+    container_name: redis3
+    command: redis-server /usr/local/etc/redis/redis.conf --slaveof redis1 6379 --appendonly yes
+    volumes:
+      - ../docker-volume/redis/redis3/:/data
+      - ../docker-volume/redis/:/usr/local/etc/redis/
+    environment:
+      - TZ=Asia/Taipei
+    networks:
+      efk_network:
+        ipv4_address: 172.20.0.13
+    ports:
+      - 6381:6379
+    depends_on:
+      - redis1
+      - redis2
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: 172.20.0.5:24224
+        tag: redis3
+
+networks:
+  efk_network:
+    external:
+      name: efk_network
