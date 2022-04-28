@@ -47,7 +47,7 @@ Filebeats 是一個輕量級收集本地 log 數據的方案，它僅能收集�
 
 ## 實作
 
-那接下來會使用 Docker-compose 實作 EFK 的 LOG 分析，[範例程式連結 點我](https://github.com/880831ian/docker-compose-redis-sentinel-haproxy-efk) 😘
+本文章是使用 Docker-compose 實作 EFK 的 LOG 分析，建議可以先觀看 用 EFK 收集容器日誌 (HAProxy、Redis Sentinel、Docker-compose) 文章來簡單學習 EFK。
 
 版本資訊
 * macOS：11.6
